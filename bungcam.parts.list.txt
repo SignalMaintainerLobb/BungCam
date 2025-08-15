@@ -1,0 +1,200 @@
+Suggested Buy List (Starter Build)
+| Item 					| Supplier 			| Est. Price (CAD) 
+
+| Raspberry Pi 4 (4GB) 			| PiShop.ca 			| ~$80  
+| FLIR Lepton 3.5 + Breakout 		| Digi-Key / GroupGets 		| ~$250–300  
+| MLX90614 IR Sensor 			| RobotShop 			| ~$20  
+| 4-Channel Relay Board 		| Amazon.ca 			| ~$15  
+| GPIO Expansion Board 			| Elmwood Electronics 		| ~$10  
+| SD Card (32GB) 			| Amazon.ca 			| ~$15 		 
+| Power Supply (5V 3A) 			| PiShop.ca 			| ~$15  
+| IP65 Enclosure 			| Amazon.ca / Digi-Key 		| ~$30–50  
+| Jumper Wires + LEDs 			| Amazon.ca 			| ~$10  
+
+
+
+
+Bench Build: Heat Detection + Alert Logic
+🔹 Goal
+Detect heat buildup on a wire or test nut using an IR sensor, and trigger a visual or audible alert when a threshold is crossed.
+
+
+Core Components
+| Component 				| Role
+ 
+| Raspberry Pi 4 			| Central controller 
+| MLX90614 IR Sensor 			| Detects surface temperature of wire/nut  
+| LED (Red) 				| Visual alert 
+| Buzzer 				| Audible alert 
+| Breadboard + Jumper Wires 		| Easy prototyping  
+| Power Supply (5V 3A) 			| Powers Pi and peripherals 
+
+
+
+
+Wiring Overview
+🔹 1. MLX90614 IR Sensor → Raspberry Pi
+
+- SDA → Pi GPIO2 (Physical Pin 3)
+- SCL → Pi GPIO3 (Physical Pin 5)
+- VCC → Pi 3.3V (Physical Pin 1)
+- GND → Pi Ground (Physical Pin 6)
+This sets up I²C communication between the Pi and the IR sensor.
+
+
+
+
+🔹 2. LED Alert → Raspberry Pi
+
+- Anode (+) → Pi GPIO17 (Physical Pin 11) via 220Ω resistor
+- Cathode (-) → Pi Ground (Physical Pin 6)
+When triggered, the Pi will send HIGH to GPIO17 to light the LED.
+
+
+🔹 3. Buzzer → Raspberry Pi
+
+- Positive (+) → Pi GPIO27 (Physical Pin 13)
+- Negative (-) → Pi Ground (Physical Pin 6)
+Same logic—Pi sends HIGH to GPIO27 to activate buzzer.
+
+
+
+🧠 Logic Flow (Hardware Perspective)
+
+- Sensor reads heat from wire/test nut.
+- Pi receives temperature data via I²C.
+- If temp > threshold (e.g., 60°C):
+- GPIO17 → HIGH → LED turns on
+- GPIO27 → HIGH → Buzzer sounds
+- If temp < threshold:
+- GPIOs → LOW → Alerts off
+
+🧪 Bench Setup Tips
+
+- Mount the MLX90614 about 2–5 cm from the wire/nut for accurate readings.
+- Use a heat gun or resistor to simulate heat buildup.
+- Keep wires short and clean to avoid I²C noise.
+- Use a breadboard for easy swapping and testing.
+
+🧰 Optional Add-ons
+
+- OLED Display: Show live temperature readings.
+- Push Button: Manual reset or override.
+- Relay (later): Trigger external systems once logic is proven.
+
+
+
+Example Workflow
+| Step 						| Action | 
+
+| Install OS on Pi device			| Download on SD card and load onto Pi
+
+| Connect IR camera to Pi device		| Hook up via USB and power on IR camera
+
+| Heat Test 					| Apply heat to wire with resistor or heat gun 
+
+| Sensor Capture 				| IR cam records thermal frames every second 
+
+| Training Pipeline				| You capture purposed fault readings and purposed false faults
+
+| Save Data 					| Pi stores images or readings to SD card 
+
+| Transfer 					| Move data to laptop for cloud training on Pre trained Cloud AI Platform
+
+| Cloud AI Platform				| MobileNet or ResNet
+
+| Train 					| Build model to recognize heat patterns by coding in PyTorch or TensorFlow Lite
+
+| Export 					| Save model as .tflite or .pt 
+
+| Export					| Transfer via USB or ethernet
+
+| Deploy Test					| Pi loads model and runs live detection of faults and false faults 
+
+| Re-Train					| Test in field and push re-conditioning of reporting with more faults
+
+| Deploy your Edge device			| Develop Protocols for use
+
+
+
+
+Model Strategy: Pre-Trained Vision Backbone
+
+Why Pre-Trained?
+
+To accelerate development and improve accuracy, Bungcam uses a pre-trained convolutional neural network (CNN) such as MobileNet or ResNet. These models have already learned general visual features (edges, shapes, textures) from millions of images.
+
+Training Approach:
+
+We apply transfer learning, retraining the final layers of the model using our custom thermal fault dataset. This allows Bungcam to specialize in detecting heat anomalies without needing to learn basic visual recognition from scratch.
+Benefits:
+
+- Faster training with fewer images
+- Higher accuracy with limited data
+- Optimized for edge deployment on Raspberry Pi
+- Reduced risk of overfitting
+
+Model Format:
+
+Final model exported as .tflite (TensorFlow Lite) or .pt (PyTorch) for lightweight inference on Pi.
+
+AI Models Are Like Relays
+- Specs tell you potential
+Just like a relay’s datasheet tells you voltage, current, and coil resistance, a model’s architecture tells you speed, accuracy, and size.
+- Real-world use reveals truth
+You only know how a relay handles load when it’s switching in your circuit. Same with AI—you only know how it performs when it’s reading your thermal data in your environment.
+- Longevity and reliability are earned
+Some relays arc early, some last forever. Some models overfit, some generalize beautifully. You find out by testing.
+
+🧠 What You’re Building Is Experimental
+You’re not just deploying a known solution—you’re exploring unknowns:
+- Will MobileNet pick up subtle heat gradients?
+- Will ResNet overfit on small datasets?
+- Will the model latch onto false positives?
+- Will it adapt to field conditions like dust, sunlight, or vibration?
+Nobody can answer these perfectly—not even me. Because your data is unique, and your application is novel.
+
+🧠 But You’re Not Flying Blind
+You can train a model to read lines on a human face. You can teach it to detect heat blobs. You can refine it to ignore false triggers. That’s enough to know you’re on solid ground—and the rest? That’s where your field testing, intuition, and engineering instincts come in
+
+
+
+
+
+Workflow: Training Bungcam with a Pre-Trained Model
+
+| Step 				| What You’re Doing 							| Analogy | 
+
+| 1. Choose a Model 		| Pick MobileNet, ResNet, etc. 						| Like hiring a specialist with general skills | 
+
+| 2. Load Pre-Trained Weights 	| Import the model with its learned visual features 			| Like starting with someone who already knows how to read | 
+
+| 3. Freeze Base Layers 	| Lock the early layers so they don’t change 				| Preserve their general visual knowledge | 
+
+| 4. Add Custom Layers 		| Add new layers for your specific task (e.g., fault detection) 	| Like teaching someone your company’s workflow | 
+
+| 5. Prepare Your Dataset 	| Organize thermal images into labeled folders (fault / no fault) 	| Like showing examples to a trainee |
+ 
+| 6. Train the Final Layers 	| Fine-tune the model using your data 					| Like refining someone’s judgment with real-world cases | 
+
+| 7. Validate Accuracy 		| Test on unseen data to check performance 				| Like giving a pop quiz to your trainee | 
+
+| 8. Export the Model 		| Save as .tflite or .pt for Pi deployment 				| Like handing off a trained technician to the field |
+ 
+| 9. Deploy to Pi 		| Load the model and run live inference 				| Bungcam starts making decisions in real time | 
+
+| 10. Re-train as Needed 	| Collect new data, retrain, improve 					| Like ongoing coaching and performance reviews | 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
